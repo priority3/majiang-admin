@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  majiang-admin:
+    build: .
+    container_name: majiang-admin
+    restart: unless-stopped
+    ports:
+      - "3210:3210"
+    volumes:
+      - /Users/moka/Documents/da-code/majiang-optimized:/data/majiang-optimized:ro
+      - majiang-admin-data:/app/data
+    environment:
+      - PORT=3210
+      - REPO_PATH=/data/majiang-optimized
+
+volumes:
+  majiang-admin-data:
