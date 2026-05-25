@@ -76,20 +76,21 @@ app.post('/api/track', async (req, res) => {
   try {
     const event = req.body;
 
-    // 确保 visitorId 存在
+    // 丢弃没有 visitorId 的无效请求
     if (!event.visitorId) {
-      event.visitorId = `fallback_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      return res.json({ ok: true, skipped: true })
     }
 
     event._serverTime = Date.now();
 
-    // Server-side IP geolocation (client-side was removed for security)
-    const clientIP = getClientIP(req)
+    // 优先使用客户端上报的真实 IP，fallback 到服务端检测的连接 IP
+    const clientIP = event.realIp || getClientIP(req)
     const geo = await resolveIP(clientIP)
     if (geo.country) event.country = geo.country
     if (geo.region) event.region = geo.region
     if (geo.city) event.city = geo.city
     event._clientIP = clientIP
+    delete event.realIp // 清理，不存原始字段
 
     trackData.events.push(event);
 
@@ -99,7 +100,8 @@ app.post('/api/track', async (req, res) => {
     }
 
     // 更新 PV 统计
-    const today = new Date(event.timestamp).toISOString().slice(0, 10);
+    const eventTime = event.timestamp || Date.now()
+    const today = new Date(eventTime).toISOString().slice(0, 10);
     pvData.total++;
     pvData.daily[today] = (pvData.daily[today] || 0) + 1;
     pvData.pages[event.path || '/'] = (pvData.pages[event.path || '/'] || 0) + 1;
