@@ -8,7 +8,8 @@ services:
     ports:
       - "3210:3210"
     volumes:
-      - /Users/moka/Documents/da-code/majiang-optimized:/data/majiang-optimized:ro
+    # todo 更新为正确的前台地址
+      - xx/majiang-optimized:/data/majiang-optimized:ro
       - majiang-admin-data:/app/data
     environment:
       - PORT=3210
